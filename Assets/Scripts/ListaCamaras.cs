@@ -1,20 +1,9 @@
-using System;
+// using System.Collections;
+using System.Collections.Generic;
+// using UnityEngine;
 
-// JsonUtility .FromJson :
-// Debe ser una clase/estructura simple
-// marcada con el atributo Serializable
-
-[Serializable]
+//[Serializable]
 public class ListaCamaras
 {
-    public string concello;
-    public string dataUltimaAct;
-    public int idConcello;
-    public int identificador;
-    public string imaxeCamara;
-    public string imaxeCamaraMini;
-    public float lat;
-    public float lon;
-    public string nomeCamara;
-    public string provincia;
+    public List<Camara> listaCamaras;
 }

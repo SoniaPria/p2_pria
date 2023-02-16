@@ -8,8 +8,8 @@ public class GameManager : MonoBehaviour
 {
    string api = "https://servizos.meteogalicia.gal/mgrss/observacion/jsonCamaras.action";
 
-   MeteoCamaras getResults;
-   public ListaCamaras getCamaras;
+   ListaCamaras listaCamaras;
+   public Camara camara;
 
    // Plantilla extraída de
    // Unity Docs | UnityWebRequest.Get
@@ -39,7 +39,7 @@ public class GameManager : MonoBehaviour
                     Debug.LogError(pages[page] + ": HTTP Error: " + wr.error);
                 break;
                 case UnityWebRequest.Result.Success:
-                    // Debug.Log(pages[page] + ":\nReceived: " + wr.downloadHandler.text);
+                    //Debug.Log(pages[page] + ":\nReceived: " + wr.downloadHandler.text);
 
                     CreateFromJSON( wr.downloadHandler.text );
                 break;
@@ -50,21 +50,20 @@ public class GameManager : MonoBehaviour
     // JsonUtility.FromJson
     void CreateFromJSON( string jsonString )
     {
-        getResults = JsonUtility.FromJson<MeteoCamaras>(jsonString);
-        getCamaras = getResults.results[0];
+        listaCamaras = JsonUtility.FromJson<ListaCamaras>(jsonString);
+        //camara = listaCamaras.listaCamaras;
 
-        PrintGetQuestion();
+        print("Nº de cámaras: " + listaCamaras.listaCamaras.Count);
+
+
+        //PrintGetQuestion();
     }
 
 
-    void PrintGetQuestion()
+    void PrintGetImageCamara()
     {
-        // Imprime na consola o número de preguntas solicitadas
-        // e 4 datos da primeira pregunta
-
-        int ncc = getResults.results.Count;
-
-        print("O número de cámaras é: " + ncc );
+        //int ncc = camara.Count;
+        // print("O número de cámaras é: " + ncc );
 
     }
 }
