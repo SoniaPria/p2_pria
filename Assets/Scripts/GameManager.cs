@@ -1,70 +1,82 @@
 using System.Collections;
-using UnityEngine.Networking;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.Networking;
 using System;
+
+// App en Unity que mostre unha imaxe dunha cámara aleatoria
+// das ofrecidas pola API de MeteoGalicia.
 
 public class GameManager : MonoBehaviour
 {
-   string api = "https://servizos.meteogalicia.gal/mgrss/observacion/jsonCamaras.action";
+    const string API = "https://servizos.meteogalicia.gal/mgrss/observacion/jsonCamaras.action";
 
-   ListaCamaras listaCamaras;
-   public Camara camara;
+    ListaCamaras getCamaras;
+    Camara meteoCamara;
 
-   // Plantilla extraída de
-   // Unity Docs | UnityWebRequest.Get
     void Awake()
     {
-        // A correct website page.
-        StartCoroutine( GetRequest( api ) );
+        // Iniciando unha corrrutina de petición de datos por GET
+        StartCoroutine( GetRequest( API ) );
     }
+
+    // Corrutina baseada no ex. de UnityWebRequest.Get
+    // que devolve un obxecto de datos de uri
 
     IEnumerator GetRequest( string uri )
     {
-        using ( UnityWebRequest wr = UnityWebRequest.Get(uri) )
+        using ( UnityWebRequest wr = UnityWebRequest.Get( uri ) )
         {
-            // Request and wait for the desired page.
+            // Enviando a solicitude i esperando resposta
             yield return wr.SendWebRequest();
 
-            string[] pages = uri.Split('/');
-            int page = pages.Length - 1;
+            string consoleMsg = "GameManager.GetRequest() \n";
 
-            switch (wr.result)
+            if ( wr.result.Equals( UnityWebRequest.Result.Success ) )
             {
-                case UnityWebRequest.Result.ConnectionError:
-                case UnityWebRequest.Result.DataProcessingError:
-                    Debug.LogError(pages[page] + ": Error: " + wr.error);
-                break;
-                case UnityWebRequest.Result.ProtocolError:
-                    Debug.LogError(pages[page] + ": HTTP Error: " + wr.error);
-                break;
-                case UnityWebRequest.Result.Success:
-                    //Debug.Log(pages[page] + ":\nReceived: " + wr.downloadHandler.text);
+                // Descargando datos co método DownloadHandler
+                string jsonString = wr.downloadHandler.text;
 
-                    CreateFromJSON( wr.downloadHandler.text );
-                break;
+                // consoleMsg += "Received: " + jsonString;
+                // print( consoleMsg );
+
+                // De ter éxito devolve un obxeto de tipo ListaCamaras
+                // que é unha lista de obxetos de tipo Cámara
+                getCamaras = JsonUtility.FromJson<ListaCamaras>(jsonString);
+
+                if ( getCamaras.listaCamaras.Count > 0 )
+                {
+                    SelectCameraRandomly();
+                }
+                else {
+                    consoleMsg += "Algo fallou na serialización";
+                    Debug.Log( consoleMsg );
+                }
+            }
+
+            else {
+                consoleMsg += "Error: " + wr.error;
+                Debug.LogError( consoleMsg );
             }
         }
     }
 
-    // JsonUtility.FromJson
-    void CreateFromJSON( string jsonString )
+    void SelectCameraRandomly()
     {
-        listaCamaras = JsonUtility.FromJson<ListaCamaras>(jsonString);
-        //camara = listaCamaras.listaCamaras;
+        int ncc = getCamaras.listaCamaras.Count;
 
-        print("Nº de cámaras: " + listaCamaras.listaCamaras.Count);
+        // Random' is an ambiguous reference between
+        // 'UnityEngine.Random' and 'System.Random
+        // int rdmCamara = Random.Range( 0, ncc );
+        int rdmCamara = UnityEngine.Random.Range( 0, ncc );
 
+        // Establecento a cámara global para esta tarefa
+        meteoCamara = getCamaras.listaCamaras[rdmCamara];
 
-        //PrintGetQuestion();
-    }
-
-
-    void PrintGetImageCamara()
-    {
-        //int ncc = camara.Count;
-        // print("O número de cámaras é: " + ncc );
-
+        // Dev
+        string consoleMsg = "GameManager.SelectCameraRandomly() \n";
+        consoleMsg += $"Recibidos datos de {ncc} cámaras de MeteoGalicia\n";
+        consoleMsg += $"Selecciónase a cámara do Concello de {meteoCamara.concello} \n";
+        print( consoleMsg );
     }
 }
-
