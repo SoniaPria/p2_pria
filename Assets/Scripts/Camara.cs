@@ -1,8 +1,8 @@
 using System;
 
 // JsonUtility .FromJson :
-// Debe ser una clase/estructura simple
-// marcada con el atributo Serializable
+// Debe ser unha clase ou estructura sinxela
+// marcada coma Serializable
 
 [Serializable]
 public class Camara
