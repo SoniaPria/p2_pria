@@ -14,10 +14,24 @@ public class GameManager : MonoBehaviour
     ListaCamaras getCamaras;
     Camara meteoCamara;
 
+    bool issetImaxeCamara = false;
+
     void Awake()
     {
         // Iniciando unha corrrutina de petición de datos por GET
         StartCoroutine( GetRequest( API ) );
+    }
+
+    void Update()
+    {
+        if ( issetImaxeCamara )
+        {
+            // Descargar imaxe
+        }
+
+        else {
+            // Plan B
+        }
     }
 
     // Corrutina baseada no ex. de UnityWebRequest.Get
@@ -73,10 +87,20 @@ public class GameManager : MonoBehaviour
         // Establecento a cámara global para esta tarefa
         meteoCamara = getCamaras.listaCamaras[rdmCamara];
 
+        // Buscando o dato da url da imaxe a mostrar
+        string imaxeCamara = meteoCamara.imaxeCamara;
+
+        if ( imaxeCamara != null )
+        {
+            issetImaxeCamara = true;
+        }
+
         // Dev
         string consoleMsg = "GameManager.SelectCameraRandomly() \n";
         consoleMsg += $"Recibidos datos de {ncc} cámaras de MeteoGalicia\n";
         consoleMsg += $"Selecciónase a cámara do Concello de {meteoCamara.concello} \n";
+        consoleMsg += $"Data da última foto: {meteoCamara.dataUltimaAct} \n";
+        consoleMsg += $"Url da foto: {meteoCamara.imaxeCamara} \n";
         print( consoleMsg );
     }
 }
