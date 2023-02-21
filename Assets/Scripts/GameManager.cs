@@ -75,6 +75,29 @@ public class GameManager : MonoBehaviour
         }
     }
 
+    IEnumerator GetTexture( string uri )
+    {
+        using ( UnityWebRequest wrt = UnityWebRequestTexture.GetTexture(uri) )
+        {
+            // Enviando a solicitude i esperando resposta
+            yield return wrt.SendWebRequest();
+
+            string consoleMsg = "GameManager.GetTexture() \n";
+
+            if ( wrt.result.Equals( UnityWebRequest.Result.Success ) )
+            {
+                // Get downloaded asset bundle
+                var texture = DownloadHandlerTexture.GetContent( wrt );
+            }
+            else
+            {
+                consoleMsg += "Error: " + wrt.error;
+                Debug.LogError( consoleMsg );
+            }
+        }
+    }
+
+
     void SelectCameraRandomly()
     {
         int ncc = getCamaras.listaCamaras.Count;
