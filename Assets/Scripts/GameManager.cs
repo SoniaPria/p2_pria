@@ -5,8 +5,12 @@ using UnityEngine.Networking;
 using System;
 using UnityEngine.UI;
 
+// PRIA.p2
+
 // App en Unity que mostre unha imaxe dunha cámara aleatoria
 // das ofrecidas pola API de MeteoGalicia.
+
+// @author Sonia Álvarez
 
 public class GameManager : MonoBehaviour
 {
@@ -34,9 +38,9 @@ public class GameManager : MonoBehaviour
 
     void Update()
     {
-        // Sempre que xa se descargara e mostrara unha foto ...
-        // SEN REFRESCAR a API
         // Múdase de cámara pulsando a barra espaciadora
+        // SEN REFRESCAR a API
+        // Sempre que xa se descargara e mostrara unha foto
         if ( Input.GetKeyDown(KeyCode.Space) && loadImaxeCamara )
         {
             loadImaxeCamara = false;
@@ -70,10 +74,8 @@ public class GameManager : MonoBehaviour
 
                 // Dev
                 // consoleMsg += "Received: " + dhText;
+                // consoleMsg += "Load jsonCamaras " + wr.downloadHandler.isDone;
                 // print( consoleMsg );
-
-                consoleMsg += "Load jsonCamaras " + wr.downloadHandler.isDone;
-                print( consoleMsg );
             }
 
             else {
@@ -95,7 +97,6 @@ public class GameManager : MonoBehaviour
             yield return wrt.SendWebRequest();
 
             string consoleMsg = "GameManager.GetTexture() \n";
-            consoleMsg += $"DataTime foto : {meteoCamara.dataUltimaAct} \n";
 
             if ( wrt.result.Equals( UnityWebRequest.Result.Success ) )
             {
@@ -106,9 +107,12 @@ public class GameManager : MonoBehaviour
                 {
                     // Boleano de descarga de textura exitosa
                     loadImaxeCamara = true;
+
+                    PrintDataMeteogaliciaJsonCamara( meteoCamara );
+
                     // Dev
-                    consoleMsg += $"Textura [{uri}] descargada con éxito";
-                    print( consoleMsg );
+                    // consoleMsg += $"Textura [{uri}] descargada con éxito";
+                    // print( consoleMsg );
                 }
             }
 
@@ -154,21 +158,25 @@ public class GameManager : MonoBehaviour
         // Establecento a cámara global para esta petición
         meteoCamara = getCamaras.listaCamaras[rdmCamara];
 
-        // Dev
-        string consoleMsg = "GameManager.SelectCameraRandomly() \n";
-        consoleMsg += $"Recibidos datos de {ncc} cámaras de MeteoGalicia\n";
-        consoleMsg += $"Selecciónase a cámara {meteoCamara.nomeCamara} \n";
+        // print Dev
+        // string consoleMsg = "GameManager.SelectCameraRandomly() \n";
+        // consoleMsg += $"Recibidos datos de {ncc} cámaras de MeteoGalicia\n";
+        // consoleMsg += $"Selecciónase a cámara {meteoCamara.nomeCamara} \n";
         // consoleMsg += $"Data da última foto: {meteoCamara.dataUltimaAct} \n";
+        // consoleMsg += $"Url da foto: {meteoCamara.imaxeCamara} \n";
+        // print( consoleMsg );
+    }
 
-        // Boleano global existe value en key imaxeCamara
-        if ( meteoCamara.imaxeCamara != null )
-        {
-            // consoleMsg += $"Url da foto: {meteoCamara.imaxeCamara} \n";
-        }
+    void PrintDataMeteogaliciaJsonCamara( Camara camara )
+    {
+        string consoleMsg = $"MeteoGalicia. Cámara {meteoCamara.nomeCamara} \n";
+        consoleMsg += $"Concello {meteoCamara.concello} \n";
+        consoleMsg += $"Provincia {meteoCamara.provincia} \n";
+        consoleMsg += $"Latitude {meteoCamara.lat} \n";
+        consoleMsg += $"Lonxitude {meteoCamara.lon} \n";
+        consoleMsg += $"DataTime da imaxe {meteoCamara.dataUltimaAct} \n";
+        consoleMsg += "\n --- --- --- --- --- --- --- --- --- --- --- \n";
 
-        else {
-            // consoleMsg += $"Error na Url da foto: {meteoCamara.imaxeCamara} \n";
-        }
         print( consoleMsg );
     }
 }
