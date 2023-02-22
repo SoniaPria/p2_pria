@@ -18,7 +18,7 @@ public class GameManager : MonoBehaviour
 
     ListaCamaras getCamaras;
     Camara meteoCamara;
-    bool loadImaxeCamara, updateImaxeCamara;
+    bool loadImaxeCamara;
 
     void Awake()
     {
@@ -30,7 +30,6 @@ public class GameManager : MonoBehaviour
     void Start()
     {
         loadImaxeCamara = false;
-        updateImaxeCamara = false;
     }
 
     void Update()
@@ -43,24 +42,6 @@ public class GameManager : MonoBehaviour
             loadImaxeCamara = false;
             SelectCameraRandomly();
             StartCoroutine( GetTexture (meteoCamara.imaxeCamara) );
-        }
-
-        // Sempre que xa se descargara e mostrara unha foto ...
-        // REFRESCANDO a API
-        // Descarga a foto actualizada da cámara actual pulsando 'U'
-        if ( Input.GetKeyDown(KeyCode.U) && loadImaxeCamara )
-        {
-            loadImaxeCamara = false;
-            updateImaxeCamara = true;
-
-            string consoleMsg = "GameManager.Update() \n";
-            consoleMsg += $"DateTime anterior: {meteoCamara.dataUltimaAct} \n";
-            print( consoleMsg );
-            StartCoroutine( GetRequest( API ) );
-            consoleMsg = "GameManager.Update() \n";
-            consoleMsg += $"DateTime actual: {meteoCamara.dataUltimaAct} \n";
-            print( consoleMsg );
-            updateImaxeCamara = false;
         }
     }
 
@@ -127,7 +108,7 @@ public class GameManager : MonoBehaviour
                     loadImaxeCamara = true;
                     // Dev
                     consoleMsg += $"Textura [{uri}] descargada con éxito";
-                    // print( consoleMsg );
+                    print( consoleMsg );
                 }
             }
 
@@ -150,26 +131,13 @@ public class GameManager : MonoBehaviour
 
         if ( getCamaras.listaCamaras.Count > 0 )
         {
-            SelectMeteoCamara();
+            SelectCameraRandomly();
             StartCoroutine( GetTexture (meteoCamara.imaxeCamara) );
         }
 
         else {
             consoleMsg += "Algo fallou na serialización. Lista baleira";
             Debug.Log( consoleMsg );
-        }
-    }
-
-
-    void SelectMeteoCamara()
-    {
-        string consoleMsg = "GameManager.SelectMeteoCamara() \n";
-        consoleMsg += "updateImaxeCamara = " + updateImaxeCamara;
-        print( consoleMsg );
-
-        if( ! updateImaxeCamara )
-        {
-            SelectCameraRandomly();
         }
     }
 
@@ -186,23 +154,20 @@ public class GameManager : MonoBehaviour
         // Establecento a cámara global para esta petición
         meteoCamara = getCamaras.listaCamaras[rdmCamara];
 
-        // Buscando o dato da url da imaxe a mostrar
-        // string imaxeCamara = meteoCamara.imaxeCamara;
-
         // Dev
         string consoleMsg = "GameManager.SelectCameraRandomly() \n";
-        // consoleMsg += $"Recibidos datos de {ncc} cámaras de MeteoGalicia\n";
+        consoleMsg += $"Recibidos datos de {ncc} cámaras de MeteoGalicia\n";
         consoleMsg += $"Selecciónase a cámara {meteoCamara.nomeCamara} \n";
         // consoleMsg += $"Data da última foto: {meteoCamara.dataUltimaAct} \n";
 
         // Boleano global existe value en key imaxeCamara
         if ( meteoCamara.imaxeCamara != null )
         {
-            consoleMsg += $"Url da foto: {meteoCamara.imaxeCamara} \n";
+            // consoleMsg += $"Url da foto: {meteoCamara.imaxeCamara} \n";
         }
 
         else {
-            consoleMsg += $"Error na Url da foto: {meteoCamara.imaxeCamara} \n";
+            // consoleMsg += $"Error na Url da foto: {meteoCamara.imaxeCamara} \n";
         }
         print( consoleMsg );
     }
