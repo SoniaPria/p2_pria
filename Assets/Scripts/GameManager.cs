@@ -12,13 +12,13 @@ public class GameManager : MonoBehaviour
 {
     const string API = "https://servizos.meteogalicia.gal/mgrss/observacion/jsonCamaras.action";
 
-    // As 'Image' deben ser importadas como Sprite para que funcionen
+    // As 'Image' en Unity deben ser importadas como Sprite para que funcionen
     // Para aceptar texturas débese usar RawImage (Imaxe en bruto)
     public RawImage rawImgCamara;
 
     ListaCamaras getCamaras;
     Camara meteoCamara;
-    bool issetImaxeCamara, loadImaxeCamara;
+    bool loadImaxeCamara, updateImaxeCamara;
 
     void Awake()
     {
@@ -29,40 +29,41 @@ public class GameManager : MonoBehaviour
 
     void Start()
     {
-        issetImaxeCamara = false;
         loadImaxeCamara = false;
+        updateImaxeCamara = false;
     }
 
     void Update()
     {
-        if ( issetImaxeCamara )
+        // Sempre que xa se descargara e mostrara unha foto ...
+        // SEN REFRESCAR a API
+        // Múdase de cámara pulsando a barra espaciadora
+        if ( Input.GetKeyDown(KeyCode.Space) && loadImaxeCamara )
         {
-            // O Player pode cambiar de cámara pulsando unha tecla
-            // Sempre que xa foxe cargada e mostrada a imaxe anterior
-            if ( Input.GetKeyDown(KeyCode.Space) && loadImaxeCamara )
-            {
-                loadImaxeCamara = false;
-                dameCamara();
+            loadImaxeCamara = false;
+            SelectCameraRandomly();
+            StartCoroutine( GetTexture (meteoCamara.imaxeCamara) );
+        }
 
-                StartCoroutine( GetTexture (meteoCamara.imaxeCamara) );
-                // StartCoroutine( GetRequest( API ) );
-            }
+        // Sempre que xa se descargara e mostrara unha foto ...
+        // REFRESCANDO a API
+        // Descarga a foto actualizada da cámara actual pulsando 'U'
+        if ( Input.GetKeyDown(KeyCode.U) && loadImaxeCamara )
+        {
+            loadImaxeCamara = false;
+            updateImaxeCamara = true;
+
+            string consoleMsg = "GameManager.Update() \n";
+            consoleMsg += $"DateTime anterior: {meteoCamara.dataUltimaAct} \n";
+            print( consoleMsg );
+            StartCoroutine( GetRequest( API ) );
+            consoleMsg = "GameManager.Update() \n";
+            consoleMsg += $"DateTime actual: {meteoCamara.dataUltimaAct} \n";
+            print( consoleMsg );
+            updateImaxeCamara = false;
         }
     }
 
-    void dameCamara()
-    {
-                print("Dame outra cámara \n");
-        int ncc = getCamaras.listaCamaras.Count;
-
-        // Random' is an ambiguous reference between
-        // 'UnityEngine.Random' and 'System.Random
-        // int rdmCamara = Random.Range( 0, ncc );
-        int rdmCamara = UnityEngine.Random.Range( 0, ncc );
-
-        // Establecento a cámara global para esta tarefa
-        meteoCamara = getCamaras.listaCamaras[rdmCamara];
-    }
 
     // Corrutina baseada no ex. de UnityWebRequest.Get
     // que devolve un obxecto de datos de uri
@@ -83,15 +84,15 @@ public class GameManager : MonoBehaviour
 
                 if ( wr.downloadHandler.isDone )
                 {
-                    GetMeteoCamara( dhText );
+                    GetMeteoCamaras( dhText );
                 }
 
                 // Dev
                 // consoleMsg += "Received: " + dhText;
                 // print( consoleMsg );
 
-                consoleMsg += "Load json " + wr.downloadHandler.isDone;
-                // print( consoleMsg );
+                consoleMsg += "Load jsonCamaras " + wr.downloadHandler.isDone;
+                print( consoleMsg );
             }
 
             else {
@@ -105,7 +106,7 @@ public class GameManager : MonoBehaviour
     IEnumerator GetTexture( string uri )
     {
         // DownloadHandlerTexture subclase DownloadHandler especializada en
-        // descargar imaxes para usalas coma obxetos Texture
+        // descargar imaxes para usarse coma obxetos Texture
 
         using ( UnityWebRequest wrt = UnityWebRequestTexture.GetTexture(uri) )
         {
@@ -125,8 +126,8 @@ public class GameManager : MonoBehaviour
                     // Boleano de descarga de textura exitosa
                     loadImaxeCamara = true;
                     // Dev
-                    consoleMsg += "Textura descargada con éxito";
-                    print( consoleMsg );
+                    consoleMsg += $"Textura [{uri}] descargada con éxito";
+                    // print( consoleMsg );
                 }
             }
 
@@ -138,7 +139,8 @@ public class GameManager : MonoBehaviour
         }
     }
 
-    void GetMeteoCamara ( string jsonString )
+    // Asigna o json actualizado a getCamaras (ListaCamaras)
+    void GetMeteoCamaras ( string jsonString )
     {
         // De chegados aquí obténse un obxeto de tipo ListaCamaras
         // que é unha lista de obxetos de tipo Cámara
@@ -148,18 +150,26 @@ public class GameManager : MonoBehaviour
 
         if ( getCamaras.listaCamaras.Count > 0 )
         {
-            SelectCameraRandomly();
-
-            // Se o json contén un value ca url da imaxe a texturizar
-            if ( issetImaxeCamara )
-            {
-                // Iníciase unha sub-corrutina
-                StartCoroutine( GetTexture (meteoCamara.imaxeCamara) );
-            }
+            SelectMeteoCamara();
+            StartCoroutine( GetTexture (meteoCamara.imaxeCamara) );
         }
+
         else {
             consoleMsg += "Algo fallou na serialización. Lista baleira";
             Debug.Log( consoleMsg );
+        }
+    }
+
+
+    void SelectMeteoCamara()
+    {
+        string consoleMsg = "GameManager.SelectMeteoCamara() \n";
+        consoleMsg += "updateImaxeCamara = " + updateImaxeCamara;
+        print( consoleMsg );
+
+        if( ! updateImaxeCamara )
+        {
+            SelectCameraRandomly();
         }
     }
 
@@ -173,7 +183,7 @@ public class GameManager : MonoBehaviour
         // int rdmCamara = Random.Range( 0, ncc );
         int rdmCamara = UnityEngine.Random.Range( 0, ncc );
 
-        // Establecento a cámara global para esta tarefa
+        // Establecento a cámara global para esta petición
         meteoCamara = getCamaras.listaCamaras[rdmCamara];
 
         // Buscando o dato da url da imaxe a mostrar
@@ -181,15 +191,18 @@ public class GameManager : MonoBehaviour
 
         // Dev
         string consoleMsg = "GameManager.SelectCameraRandomly() \n";
-        consoleMsg += $"Recibidos datos de {ncc} cámaras de MeteoGalicia\n";
-        consoleMsg += $"Selecciónase a cámara do Concello de {meteoCamara.concello} \n";
-        consoleMsg += $"Data da última foto: {meteoCamara.dataUltimaAct} \n";
+        // consoleMsg += $"Recibidos datos de {ncc} cámaras de MeteoGalicia\n";
+        consoleMsg += $"Selecciónase a cámara {meteoCamara.nomeCamara} \n";
+        // consoleMsg += $"Data da última foto: {meteoCamara.dataUltimaAct} \n";
 
         // Boleano global existe value en key imaxeCamara
         if ( meteoCamara.imaxeCamara != null )
         {
-            issetImaxeCamara = true;
             consoleMsg += $"Url da foto: {meteoCamara.imaxeCamara} \n";
+        }
+
+        else {
+            consoleMsg += $"Error na Url da foto: {meteoCamara.imaxeCamara} \n";
         }
         print( consoleMsg );
     }
